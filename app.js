@@ -69,7 +69,7 @@ if (accessToken) {
     let color = null;
     if (parsed.tags && parsed.tags['custom-reward-id'] && parsed.tags['custom-reward-id'] === '9f524bb9-a5ea-42c2-9c0d-bb7ea260b6a4') {
       color = parsed.parameters.trim().toLowerCase();
-    } else if (parsed.source.host === 'bunnygirlzenpai@bunnygirlzenpai.tmi.twitch.tv' && parsed.command.botCommand) {
+    } else if (parsed.source && parsed.source.host === 'bunnygirlzenpai@bunnygirlzenpai.tmi.twitch.tv' && parsed.command.botCommand) {
       color = parsed.command.botCommand;
     }
 
