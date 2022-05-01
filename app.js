@@ -7,42 +7,42 @@ const signInBtn = document.querySelector("#sign-in");
 const accessToken = sessionStorage.getItem("accessToken");
 const chroma = new Chroma();
 
-function colorStringToBGR(colorString) {
+function colorStringToRGB(colorString) {
   switch (colorString) {
     case "red":
-      return [0, 0, 255];
+      return [255, 0, 0];
     case "orange":
-      return [0, 88, 244];
+      return [244, 88, 0];
     case "yellow":
-      return [0, 159, 255];
+      return [255, 159, 0];
     case "green":
       return [0, 255, 0];
     case "turquoise":
-      return [255, 255, 0];
+      return [0, 255, 255];
     case "blue":
-      return [255, 0, 0];
+      return [0, 0, 255];
     case "purple":
-        return [154, 3, 101];
+      return [101, 3, 154];
     case "pink":
-      return [148, 24, 248];
+      return [248, 24, 148];
     default:
       return null;
   }
 }
 
-async function flashColor(bgrArr, gap = 400, iterations = 3) {
+async function flashColor(rgbArr, gap = 400, iterations = 3) {
   for (let i = 0; i < iterations; i++) {
-    await chroma.static(bgrArr[0], bgrArr[1], bgrArr[2]);
+    await chroma.static(rgbArr[2], rgbArr[1], rgbArr[0]); // Since BGR
     await delay(gap);
     await chroma.off();
     await delay(gap);
   }
 
-  await chroma.static(bgrArr[0], bgrArr[1], bgrArr[2]);
+  await chroma.static(rgbArr[2], rgbArr[1], rgbArr[0]);
 }
 
 window.addEventListener("beforeunload", () => {
-    chroma.deinit();
+  chroma.deinit();
 });
 
 if (accessToken) {
@@ -66,15 +66,29 @@ if (accessToken) {
 
     console.log(parsed);
 
+    // Twitch server PINGs us every 5 mins or so to check if we're alive
+    // If we don't respond with PONG it'll kick us
+    if (parsed.command && parsed.command.command === "PING") {
+      ws.send(`PONG :${parsed.parameters}`);
+    }
+
     let color = null;
-    if (parsed.tags && parsed.tags['custom-reward-id'] && parsed.tags['custom-reward-id'] === '9f524bb9-a5ea-42c2-9c0d-bb7ea260b6a4') {
+    if (
+      parsed.tags &&
+      parsed.tags["custom-reward-id"] &&
+      parsed.tags["custom-reward-id"] === "9f524bb9-a5ea-42c2-9c0d-bb7ea260b6a4"
+    ) {
       color = parsed.parameters.trim().toLowerCase();
-    } else if (parsed.source && parsed.source.host === 'bunnygirlzenpai@bunnygirlzenpai.tmi.twitch.tv' && parsed.command.botCommand) {
+    } else if (
+      parsed.source &&
+      parsed.source.host === "bunnygirlzenpai@bunnygirlzenpai.tmi.twitch.tv" &&
+      parsed.command.botCommand
+    ) {
       color = parsed.command.botCommand;
     }
 
     if (color !== null) {
-      const bgr = colorStringToBGR(color);
+      const bgr = colorStringToRGB(color);
       if (bgr === null) {
         setTimeout(() => {
           ws.send("PRIVMSG #bunnygirlzenpai :Invalid color!");
